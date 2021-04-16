@@ -18,15 +18,11 @@ client.on('message', (msg) => {
 
     if(msg.content == '!time') {
         let date = new Date();
-        var pm = false;
         var hours = date.getHours();
         var amOrPm = 'am';
         if(date.getHours() > 12) {
-            pm = true;
             hours = date.getHours() - 12;
-        }
-        if(pm) {
-            amOrPm = 'pm';
+            amOrPm = 'pm'
         }
         let content = 'The time is ' + hours + ':' + date.getMinutes() + ':' + date.getSeconds() + ' ' + amOrPm + '.';
         msg.channel.send(content)
