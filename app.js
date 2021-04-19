@@ -7,7 +7,7 @@ client.on('ready', () => {
 });
 client.login(process.env.BOT_TOKEN)
 
-async function setup(msg) {
+function setup(msg) {
     //https://greenwichmeantime.com/time-zone/definition/
     //https://github.com/ac360/currency-codes-array-ISO4217
     const timezoneCodes = ['IDLW', 'NT', 'HST', 'AKST', 'PST', 'MST', 'CST', 'EST', 'AST', 'ART', 'AT', 'WAT', 'GMT', 'CET', 'EET', 'MSK', 'AMT', 'PKT', 'OMSK', 'KRAT', 'CST', 'JST', 'AEST', 'SAKT', 'NZST'];
@@ -15,16 +15,8 @@ async function setup(msg) {
     const content = msg.content.slice(7).toUpperCase().trim().split(' ');  //7 is length of '!setup '
     const timezone = content[0];
     const currency = content[1];
-    let timezoneFound = false;
-    let currencyFound = false;
-    timezoneCodes.forEach(item => {
-        if(item === timezone){
-            timezoneFound = true;
-        }});
-    currencyCodes.forEach(item => {
-        if(item === currency){
-            currencyFound = true;
-        }});
+    const timezoneFound = timezoneCodes.includes(timezone);
+    const currencyFound = currencyCodes.includes(currency);
     if(timezoneFound && currencyFound){
         msg.channel.send('Successful match for both timezone and currency!');
         msg.channel.send('User: ' + msg.member.user.tag);
@@ -42,7 +34,7 @@ async function setup(msg) {
     else{
         msg.channel.send('We could not find your currency.');
     }
-    return {userId: msg.member.user.tag, channelId: msg.channel.id, timezone: this.timezone, currency: this.currency};
+    return {userId: msg.member.user.tag, channelId: msg.channel.id, timezone: timezone, currency: currency};
 }
 
 client.on('message', (msg) => {
