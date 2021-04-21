@@ -36,42 +36,60 @@ const timezoneCodes = [
 ]
 
 function timeConversion(msg) {
-    const content = msg.content.slice(10).toUpperCase().trim().split(' ') //10 is the length of '!DocBrown '
+    const content = msg.content.slice(10).trim().split(' ') //10 is the length of '!DocBrown '
     const conversion = content[0].split('->')
-    const time = content[1].split(':').map(function (x) {
-        return parseInt(x)
-    })
+    const time = content[1].split(':')
+    time[0] = parseInt(time[0])
     const validTime =
         time[0] > 0 && time[0] <= 12 && time[1] >= 0 && time[1] < 60
-    let amOrPm = content[2].toLowerCase()
-    const isAmOrPm = content[2] === 'AM' || content[2] === 'PM'
+    let amOrPm = content[2]
+    const isAmOrPm = content[2] === 'am' || content[2] === 'pm'
     const timezoneFound =
         timezoneCodes.includes(conversion[0]) &&
         timezoneCodes.includes(conversion[1])
-    let convertedTime
+    let convertedTime = time[0]
 
     if (timezoneFound && isAmOrPm && validTime) {
-        //Uses GMT offset
+        //Uses indeces of timezone array
         const offset1 = timezoneCodes.indexOf(conversion[0])
         const offset2 = timezoneCodes.indexOf(conversion[1])
-        const diff = offset2 - offset1
+        let diff = offset2 - offset1
 
-        convertedTime = time[0] + diff
-        if (convertedTime < 0) {
+        //convertedTime += diff
+        msg.channel.send(diff)
+        msg.channel.send(convertedTime)
+        /*
+        if (convertedTime < 0 && diff > -12) {
             convertedTime += 12
-            amOrPm = content[2] === 'AM' ? 'pm' : 'am'
-        } else if (convertedTime > 12) {
+            amOrPm = content[2] === 'am' ? 'pm' : 'am'
+        } else if (convertedTime >= 12 && convertedTime <= 24) {
             convertedTime -= 12
-            amOrPm = content[2] === 'AM' ? 'pm' : 'am'
+            amOrPm = content[2] === 'am' ? 'pm' : 'am'
+        } else if (convertedTime > 24) {
+            convertedTime -= 24
+        } else if (convertedTime < 0 && diff <= -12){
+            convertedTime += 24
         }
-
+        */
+        while (diff < 0) {
+            convertedTime--
+            if (convertedTime <= 0) {
+                convertedTime = 12
+                amOrPm = content[2] === 'am' ? 'pm' : 'am'
+            }
+            diff++
+        }
+        while (diff > 0) {
+            convertedTime++
+            if (convertedTime >= 12) {
+                convertedTime = convertedTime > 12 ? 1 : convertedTime
+                amOrPm = content[2] === 'am' ? 'pm' : 'am'
+            }
+            diff--
+        }
         msg.channel.send('Success!')
         msg.channel.send(
-            conversion[0] +
-                ' time: ' +
-                content[1] +
-                ' ' +
-                content[2].toLowerCase()
+            conversion[0] + ' time: ' + content[1] + ' ' + content[2]
         )
         msg.channel.send(
             conversion[1] +
