@@ -9,34 +9,6 @@ client.on('ready', () => {
 })
 client.login(process.env.BOT_TOKEN)
 
-const timezoneCodes = [
-    'IDLW',
-    'NT',
-    'HST',
-    'AKST',
-    'PST',
-    'MST',
-    'CST',
-    'EST',
-    'AST',
-    'ART',
-    'AT',
-    'WAT',
-    'GMT',
-    'CET',
-    'EET',
-    'MSK',
-    'AMT',
-    'PKT',
-    'OMSK',
-    'KRAT',
-    'CST',
-    'JST',
-    'AEST',
-    'SAKT',
-    'NZST',
-]
-
 function timeConversion(msg) {
     const content = msg.content.slice(10).trim().split(' ') //10 is the length of '!DocBrown '
     const conversion = content[0].split('->')
