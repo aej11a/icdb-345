@@ -1,7 +1,3 @@
-module.exports = {
-    timezoneCodes: [],
-    currencyCodes: [],
-}
 const timezoneCodes = [
     'IDLW',
     'NT',
@@ -191,3 +187,8 @@ const currencyCodes = [
     'ZAR',
     'ZMW',
 ]
+
+module.exports = {
+    timezoneCodes,
+    currencyCodes,
+}
