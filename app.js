@@ -3,6 +3,15 @@ require('dotenv').config()
 
 const { timezoneCodes, currencyCodes } = require('./supported-conversions')
 
+//Add all command strings here and call these - may add to supported-conversions
+const commands = {
+    greeting: 'Hello ICDB!',
+    date: '!date',
+    time: '!time',
+    convertTime: '!DocBrown',
+    setup: '!setup',
+}
+
 const client = new Discord.Client()
 client.on('ready', () => {
     console.log("The bot is connected to Yang's Gang!")
@@ -10,7 +19,10 @@ client.on('ready', () => {
 client.login(process.env.BOT_TOKEN)
 
 function timeConversion(msg) {
-    const content = msg.content.slice(10).trim().split(' ') //10 is the length of '!DocBrown '
+    const content = msg.content
+        .slice(commands.convertTime.length)
+        .trim()
+        .split(' ')
     const conversion = content[0].split('->')
     const time = content[1].split(':')
     time[0] = parseInt(time[0])
@@ -80,7 +92,11 @@ function timeConversion(msg) {
 function setup(msg) {
     //https://greenwichmeantime.com/time-zone/definition/
     //https://github.com/ac360/currency-codes-array-ISO4217
-    const content = msg.content.slice(7).toUpperCase().trim().split(' ') //7 is length of '!setup '
+    const content = msg.content
+        .slice(commands.setup.length)
+        .toUpperCase()
+        .trim()
+        .split(' ') //7 is length of '!setup '
     const timezone = content[0]
     const currency = content[1]
     const timezoneFound = timezoneCodes.includes(timezone)
@@ -109,12 +125,12 @@ function setup(msg) {
 
 client.on('message', (msg) => {
     //test function: call and response
-    if (msg.content === 'Hello ICDB!') {
+    if (msg.content === commands.greeting) {
         msg.reply('Hi :)')
     }
 
     //test function: messages today's date formatted mm/dd/yyyy
-    if (msg.content === '!date') {
+    if (msg.content === commands.date) {
         const date = new Date()
         const content =
             "Today's date is " +
@@ -128,7 +144,7 @@ client.on('message', (msg) => {
     }
 
     //test function: messages the current time formatted hh:mm:ss
-    if (msg.content === '!time') {
+    if (msg.content === commands.time) {
         const date = new Date()
         let hours = date.getHours()
         let minutes = date.getMinutes()
@@ -157,12 +173,13 @@ client.on('message', (msg) => {
         msg.channel.send(content)
     }
 
-    //function: listens for !setup {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
-    if (msg.content.startsWith('!setup')) {
+    //function: listens for setup command {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
+    if (msg.content.startsWith(commands.setup)) {
         setup(msg)
     }
 
-    if (msg.content.startsWith('!DocBrown')) {
+    //function: listens for convertTime command {starting timezone}->{ending timezone} {hh:mm} {'am' or 'pm'}
+    if (msg.content.startsWith(commands.convertTime)) {
         timeConversion(msg)
     }
 })
