@@ -29,35 +29,19 @@ function timeConversion(msg) {
         const offset2 = timezoneCodes.indexOf(conversion[1])
         let diff = offset2 - offset1
 
-        //convertedTime += diff
         msg.channel.send(diff)
-        msg.channel.send(convertedTime)
-        /*
-        if (convertedTime < 0 && diff > -12) {
-            convertedTime += 12
-            amOrPm = content[2] === 'am' ? 'pm' : 'am'
-        } else if (convertedTime >= 12 && convertedTime <= 24) {
-            convertedTime -= 12
-            amOrPm = content[2] === 'am' ? 'pm' : 'am'
-        } else if (convertedTime > 24) {
-            convertedTime -= 24
-        } else if (convertedTime < 0 && diff <= -12){
-            convertedTime += 24
-        }
-        */
+
         while (diff < 0) {
-            convertedTime--
-            if (convertedTime <= 0) {
-                convertedTime = 12
-                amOrPm = content[2] === 'am' ? 'pm' : 'am'
+            if (convertedTime === 12) {
+                amOrPm = amOrPm === 'am' ? 'pm' : 'am'
             }
+            convertedTime = convertedTime === 1 ? 12 : convertedTime - 1
             diff++
         }
         while (diff > 0) {
-            convertedTime++
-            if (convertedTime >= 12) {
-                convertedTime = convertedTime > 12 ? 1 : convertedTime
-                amOrPm = content[2] === 'am' ? 'pm' : 'am'
+            convertedTime = convertedTime === 12 ? 1 : convertedTime + 1
+            if (convertedTime === 12) {
+                amOrPm = amOrPm === 'am' ? 'pm' : 'am'
             }
             diff--
         }
@@ -90,7 +74,6 @@ function timeConversion(msg) {
     return {
         userId: msg.member.user.tag,
         channelId: msg.channel.id,
-        convertedTime,
     }
 }
 
