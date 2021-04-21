@@ -52,7 +52,7 @@ function setup(msg) {
     }
 }
 
-client.on('message', (msg) => {
+client.on('message', async (msg) => {
     //test function: call and response
     if (msg.content === 'Hello ICDB!') {
         msg.reply('Hi :)')
@@ -119,9 +119,33 @@ client.on('message', (msg) => {
             })
     }
 
+    const getUserFromMessage = async (msg) => {
+        try {
+            const doc = await db
+                .collection('users')
+                .doc(msg.member.user.tag)
+                .get()
+            if (doc.exists) {
+                return doc.data()
+            } else {
+                // doc.data() will be undefined in this case
+                console.log('No such document!')
+            }
+        } catch (error) {
+            console.log('Error getting document:', error)
+        }
+    }
+
     //function: listens for !setup {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
     if (msg.content.startsWith('!setup')) {
         const messageSetupData = setup(msg)
         addUserToDb(messageSetupData)
+    }
+
+    if (msg.content.startsWith('!whoami')) {
+        const user = await getUserFromMessage(msg)
+        msg.channel.send(
+            `You are ${user.userId}, your timezone is ${user.timezone}, and your currency is ${user.currency}.`
+        )
     }
 })
