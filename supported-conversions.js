@@ -1,4 +1,4 @@
-module.expoerts = {
+module.exports = {
     timezoneCodes: [],
     currencyCodes: [],
 }
