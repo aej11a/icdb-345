@@ -1,6 +1,6 @@
 const Discord = require('discord.js')
 require('dotenv').config()
-
+const { getUserFromMessage, addUserToDb } = require('./db')
 const { timezoneCodes, currencyCodes } = require('./supported-conversions')
 
 const client = new Discord.Client()
@@ -50,7 +50,7 @@ function setup(msg) {
     }
 }
 
-client.on('message', (msg) => {
+client.on('message', async (msg) => {
     //test function: call and response
     if (msg.content === 'Hello ICDB!') {
         msg.reply('Hi :)')
@@ -102,6 +102,14 @@ client.on('message', (msg) => {
 
     //function: listens for !setup {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
     if (msg.content.startsWith('!setup')) {
-        setup(msg)
+        const messageSetupData = setup(msg)
+        addUserToDb(messageSetupData)
+    }
+
+    if (msg.content.startsWith('!whoami')) {
+        const user = await getUserFromMessage(msg)
+        msg.channel.send(
+            `You are ${user.userId}, your timezone is ${user.timezone}, and your currency is ${user.currency}.`
+        )
     }
 })
