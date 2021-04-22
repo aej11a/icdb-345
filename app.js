@@ -10,6 +10,7 @@ const {
 } = require('./supported-conversions')
 
 const { timeConversion } = require('./timeConversion')
+const { getUserFromMessage, addUserToDb } = require('./db')
 
 const client = new Discord.Client()
 client.on('ready', () => {
@@ -32,16 +33,27 @@ function setup(msg) {
     if (timezoneFound && currencyFound) {
         msg.channel.send('Successful match for both timezone and currency!')
         msg.channel.send('User: ' + msg.member.user.tag)
-    }
-    if (timezoneFound) {
         msg.channel.send('Timezone: ' + timezone)
-    } else {
-        msg.channel.send('We could not find your timezone.')
-    }
-    if (currencyFound) {
         msg.channel.send('Currency: ' + currency)
+        //msg.channel.send('Channel: ' + msg.channel.id);
+        // above line for debugging not for display*
+    } else if (timezoneFound && !currencyFound) {
+        msg.channel.send(
+            'Successful match for timezone, but we could not find your currency.'
+        )
+        msg.channel.send('Timezone: ' + timezone)
+        msg.channel.send('Currency: ???')
+        return undefined
+    } else if (!timezoneFound && currencyFound) {
+        msg.channel.send(
+            'Successful match for currency, but we could not find your timezone.'
+        )
+        msg.channel.send('Timezone: ???')
+        msg.channel.send('Currency: ' + currency)
+        return undefined
     } else {
-        msg.channel.send('We could not find your currency.')
+        msg.channel.send('We could not find your timezone or your currency.')
+        return undefined
     }
     return {
         userId: msg.member.user.tag,
@@ -51,7 +63,7 @@ function setup(msg) {
     }
 }
 
-client.on('message', (msg) => {
+client.on('message', async (msg) => {
     //test function: call and response
     if (msg.content === commands.greeting) {
         let rand = Math.floor(Math.random() * hello.length)
@@ -102,13 +114,25 @@ client.on('message', (msg) => {
         msg.channel.send(content)
     }
 
-    //function: listens for setup command {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
-    if (msg.content.startsWith(commands.setup)) {
-        setup(msg)
+    //function: listens for !setup {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
+    if (msg.content.startsWith('!setup')) {
+        const messageSetupData = setup(msg)
+        addUserToDb(messageSetupData)
     }
 
-    //function: listens for convertTime command {starting timezone}->{ending timezone} {hh:mm} {'am' or 'pm'}
-    if (msg.content.startsWith(commands.convertTime)) {
+    if (msg.content.startsWith('!whoami')) {
+        const user = await getUserFromMessage(msg)
+        msg.channel.send(
+            `You are ${user.userId}, your timezone is ${user.timezone}, and your currency is ${user.currency}.`
+        )
+    }
+
+    //INVALID - function: listens for convertTime command {starting timezone}->{ending timezone} {hh:mm} {'am' or 'pm'}
+    //function: listens for timeRegEx
+    const timeRegEx = new RegExp(
+        '((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))'
+    )
+    if (msg.content.match(timeRegEx)) {
         timeConversion(msg)
     }
 })
