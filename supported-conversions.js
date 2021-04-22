@@ -1,3 +1,10 @@
+const commands = {
+    greeting: 'Hello ICDB!',
+    date: '!date',
+    time: '!time',
+    convertTime: '!DocBrown',
+    setup: '!setup',
+}
 const timezoneCodes = [
     'IDLW',
     'NT',
@@ -187,8 +194,11 @@ const currencyCodes = [
     'ZAR',
     'ZMW',
 ]
+const hello = ['Hi :)', 'Nice to see you!', 'Can I help you?']
 
 module.exports = {
+    commands,
     timezoneCodes,
     currencyCodes,
+    hello,
 }

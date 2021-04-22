@@ -1,7 +1,16 @@
 const Discord = require('discord.js')
 require('dotenv').config()
+
+//Add all command strings to supported-conversions and call these
+const {
+    timezoneCodes,
+    currencyCodes,
+    commands,
+    hello,
+} = require('./supported-conversions')
+
+const { timeConversion } = require('./timeConversion')
 const { getUserFromMessage, addUserToDb } = require('./db')
-const { timezoneCodes, currencyCodes } = require('./supported-conversions')
 
 const client = new Discord.Client()
 client.on('ready', () => {
@@ -12,7 +21,11 @@ client.login(process.env.BOT_TOKEN)
 function setup(msg) {
     //https://greenwichmeantime.com/time-zone/definition/
     //https://github.com/ac360/currency-codes-array-ISO4217
-    const content = msg.content.slice(7).toUpperCase().trim().split(' ') //7 is length of '!setup '
+    const content = msg.content
+        .slice(commands.setup.length)
+        .toUpperCase()
+        .trim()
+        .split(' ') //7 is length of '!setup '
     const timezone = content[0]
     const currency = content[1]
     const timezoneFound = timezoneCodes.includes(timezone)
@@ -52,12 +65,13 @@ function setup(msg) {
 
 client.on('message', async (msg) => {
     //test function: call and response
-    if (msg.content === 'Hello ICDB!') {
-        msg.reply('Hi :)')
+    if (msg.content === commands.greeting) {
+        let rand = Math.floor(Math.random() * hello.length)
+        msg.reply(hello[rand])
     }
 
     //test function: messages today's date formatted mm/dd/yyyy
-    if (msg.content === '!date') {
+    if (msg.content === commands.date) {
         const date = new Date()
         const content =
             "Today's date is " +
@@ -71,7 +85,7 @@ client.on('message', async (msg) => {
     }
 
     //test function: messages the current time formatted hh:mm:ss
-    if (msg.content === '!time') {
+    if (msg.content === commands.time) {
         const date = new Date()
         let hours = date.getHours()
         let minutes = date.getMinutes()
@@ -111,5 +125,14 @@ client.on('message', async (msg) => {
         msg.channel.send(
             `You are ${user.userId}, your timezone is ${user.timezone}, and your currency is ${user.currency}.`
         )
+    }
+
+    //INVALID - function: listens for convertTime command {starting timezone}->{ending timezone} {hh:mm} {'am' or 'pm'}
+    //function: listens for timeRegEx
+    const timeRegEx = new RegExp(
+        '((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))'
+    )
+    if (msg.content.match(timeRegEx)) {
+        timeConversion(msg, targetTimezone)
     }
 })
