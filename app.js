@@ -104,4 +104,28 @@ client.on('message', (msg) => {
     if (msg.content.startsWith('!setup')) {
         setup(msg)
     }
+    //function: listens for any number of {x}{currencyCode}, messages a match, outputs converted currency
+    const regex = new RegExp('\\d+')
+    if (msg.content.match(regex)) {
+        if (msg.author.bot) return
+        //console.log(msg.content.match(regex))
+        //console.log(msg.content.match(regex)[0])
+        const lastIndex = msg.content.lastIndexOf(
+            msg.content.match(regex)[0][msg.content.match(regex)[0].length - 1]
+        )
+        console.log('Index of last digit of match: ' + lastIndex)
+        for (var i = 0; i < currencyCodes.length; i++) {
+            if (
+                msg.content.substring(lastIndex + 1, lastIndex + 4) ===
+                currencyCodes[i]
+            ) {
+                msg.channel.send(
+                    'Match found: ' +
+                        msg.content.match(regex)[0] +
+                        currencyCodes[i]
+                )
+                return
+            }
+        }
+    }
 })
