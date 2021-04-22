@@ -3,7 +3,6 @@ function autoParseCurrency(msg) {
     //function: listens for any number of {x}{currencyCode}, messages a match, outputs converted currency
     const regex = new RegExp('\\d+')
     if (msg.content.match(regex)) {
-        if (msg.author.bot) return
         console.log(msg.content.match(regex))
         console.log(msg.content.match(regex)[0])
         const matchedPhrase = msg.content.match(regex)
@@ -34,4 +33,7 @@ function autoParseCurrency(msg) {
     } else {
         return null
     }
+}
+module.export = {
+    autoParseCurrency,
 }
