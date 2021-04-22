@@ -103,7 +103,7 @@ client.on('message', async (msg) => {
     //function: listens for !setup {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
     if (msg.content.startsWith('!setup')) {
         const messageSetupData = setup(msg)
-        addUserToDb(messageSetupData)
+        if (messageSetupData) addUserToDb(messageSetupData)
     }
 
     if (msg.content.startsWith('!whoami')) {
