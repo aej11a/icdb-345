@@ -1,7 +1,7 @@
-const { commands, timezoneCodes } = require('./supported-conversions')
-const { getUserFromMessage } = require('./db')
+const { timezoneCodes } = require('./supported-conversions')
 
-function timeConversion(msg, user) {
+//defaulted targetTimezone for debug purposes
+function timeConversion(msg, targetTimezone = 'GMT') {
     if (msg.author.bot) {
         return
     }
@@ -10,7 +10,7 @@ function timeConversion(msg, user) {
     const time = content[0].split(':')
     let amOrPm = content[1]
 
-    const timezoneUser = user.timezone
+    const userTimezone = 'EST' //Replace with user's timezone from db
 
     time[0] = parseInt(time[0])
 
@@ -22,19 +22,14 @@ function timeConversion(msg, user) {
         parseInt(time[1]) < 60 &&
         time[1].length === 2
     const isAmOrPm = content[1] === 'am' || content[1] === 'pm'
-    const timezoneFound = timezoneCodes.includes(timezoneUser)
+    const timezoneFound = timezoneCodes.includes(targetTimezone)
 
     let convertedTime = time[0]
-    msg.channel.send(msg.content)
-    msg.channel.send(
-        `You are ${user.userId}, your timezone is ${user.timezone}.`
-    )
 
     if (timezoneFound && isAmOrPm && validTime) {
         //Uses indeces of timezone array
-        let conversionZone = 'GMT' //Replace with db timezones
-        const offset1 = timezoneCodes.indexOf(timezoneUser)
-        let offset2 = timezoneCodes.indexOf(conversionZone)
+        const offset1 = timezoneCodes.indexOf(userTimezone)
+        let offset2 = timezoneCodes.indexOf(targetTimezone)
         let diff = offset2 - offset1
 
         while (diff < 0) {
@@ -53,10 +48,10 @@ function timeConversion(msg, user) {
         }
         msg.channel.send('Success!')
         msg.channel.send(
-            timezoneUser + ' time: ' + content[0] + ' ' + content[1]
+            userTimezone + ' time: ' + content[0] + ' ' + content[1]
         )
         msg.channel.send(
-            conversionZone +
+            targetTimezone +
                 ' time: ' +
                 convertedTime +
                 ':' +
@@ -66,7 +61,7 @@ function timeConversion(msg, user) {
         )
     }
 
-    if (!timezoneCodes.includes(timezoneUser)) {
+    if (!timezoneFound) {
         msg.channel.send('Your first timezone is unavailable or nonexistent!')
     }
     /*
@@ -83,6 +78,7 @@ function timeConversion(msg, user) {
     return {
         userId: msg.member.user.tag,
         channelId: msg.channel.id,
+        convertedTime: convertedTime + ':' + time[1] + ' ' + amOrPm,
     }
 }
 
