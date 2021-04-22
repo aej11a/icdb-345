@@ -1,6 +1,6 @@
 const Discord = require('discord.js')
 require('dotenv').config()
-const { getUserFromMessage, addUserToDb } = require('./db')
+
 const { timezoneCodes, currencyCodes } = require('./supported-conversions')
 
 const client = new Discord.Client()
@@ -50,7 +50,7 @@ function setup(msg) {
     }
 }
 
-client.on('message', async (msg) => {
+client.on('message', (msg) => {
     //test function: call and response
     if (msg.content === 'Hello ICDB!') {
         msg.reply('Hi :)')
@@ -102,15 +102,7 @@ client.on('message', async (msg) => {
 
     //function: listens for !setup {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
     if (msg.content.startsWith('!setup')) {
-        const messageSetupData = setup(msg)
-        addUserToDb(messageSetupData)
-    }
-
-    if (msg.content.startsWith('!whoami')) {
-        const user = await getUserFromMessage(msg)
-        msg.channel.send(
-            `You are ${user.userId}, your timezone is ${user.timezone}, and your currency is ${user.currency}.`
-        )
+        setup(msg)
     }
     //function: listens for any number of {x}{currencyCode}, messages a match, outputs converted currency
     const regex = new RegExp('\\d+')
@@ -118,19 +110,18 @@ client.on('message', async (msg) => {
         if (msg.author.bot) return
         //console.log(msg.content.match(regex))
         //console.log(msg.content.match(regex)[0])
+        const matchedPhrase = msg.content.match(regex)[0]
         const lastIndex = msg.content.lastIndexOf(
-            msg.content.match(regex)[0][msg.content.match(regex)[0].length - 1]
+            matchedPhrase[matchedPhrase.length - 1]
         )
-        console.log('Index of last digit of match: ' + lastIndex)
+        //console.log('Index of last digit of match: ' + lastIndex)
         for (var i = 0; i < currencyCodes.length; i++) {
             if (
                 msg.content.substring(lastIndex + 1, lastIndex + 4) ===
                 currencyCodes[i]
             ) {
                 msg.channel.send(
-                    'Match found: ' +
-                        msg.content.match(regex)[0] +
-                        currencyCodes[i]
+                    'Match found: ' + matchedPhrase + currencyCodes[i]
                 )
                 return
             }
