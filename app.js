@@ -71,12 +71,3 @@ const buildTimesResponse = (resultTimes, originalTimezone) => {
 
     return timeResponse
 }
-
-// {
-//     EST: "1:00",
-//     PST: "10:00"
-// }
-// [
-//     ["EST", "1:00"],
-//     ["PST", "10:00"]
-// ]
