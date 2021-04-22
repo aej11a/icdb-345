@@ -63,7 +63,7 @@ function setup(msg) {
     }
 }
 
-client.on('message', async (msg) => {
+client.on('message', (msg) => {
     //test function: call and response
     if (msg.content === commands.greeting) {
         let rand = Math.floor(Math.random() * hello.length)
