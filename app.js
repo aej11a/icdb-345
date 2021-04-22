@@ -20,16 +20,27 @@ function setup(msg) {
     if (timezoneFound && currencyFound) {
         msg.channel.send('Successful match for both timezone and currency!')
         msg.channel.send('User: ' + msg.member.user.tag)
-    }
-    if (timezoneFound) {
         msg.channel.send('Timezone: ' + timezone)
-    } else {
-        msg.channel.send('We could not find your timezone.')
-    }
-    if (currencyFound) {
         msg.channel.send('Currency: ' + currency)
+        //msg.channel.send('Channel: ' + msg.channel.id);
+        // above line for debugging not for display*
+    } else if (timezoneFound && !currencyFound) {
+        msg.channel.send(
+            'Successful match for timezone, but we could not find your currency.'
+        )
+        msg.channel.send('Timezone: ' + timezone)
+        msg.channel.send('Currency: ???')
+        return undefined
+    } else if (!timezoneFound && currencyFound) {
+        msg.channel.send(
+            'Successful match for currency, but we could not find your timezone.'
+        )
+        msg.channel.send('Timezone: ???')
+        msg.channel.send('Currency: ' + currency)
+        return undefined
     } else {
-        msg.channel.send('We could not find your currency.')
+        msg.channel.send('We could not find your timezone or your currency.')
+        return undefined
     }
     return {
         userId: msg.member.user.tag,
