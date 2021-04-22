@@ -133,6 +133,7 @@ client.on('message', async (msg) => {
         '((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))'
     )
     if (msg.content.match(timeRegEx)) {
-        timeConversion(msg)
+        const user = await getUserFromMessage(msg)
+        timeConversion(msg, user)
     }
 })
