@@ -1,16 +1,10 @@
 const { timezoneCodes } = require('./supported-conversions')
 
 //defaulted targetTimezone for debug purposes
-function timeConversion(msg, targetTimezone = 'GMT') {
-    if (msg.author.bot) {
-        return
-    }
-
+function timeConversion(msg, startingTimezone = 'GMT', targetTimezone = 'GMT') {
     const content = msg.content.split(' ')
     const time = content[0].split(':')
     let amOrPm = content[1]
-
-    const userTimezone = 'EST' //Replace with user's timezone from db
 
     time[0] = parseInt(time[0])
 
@@ -27,8 +21,8 @@ function timeConversion(msg, targetTimezone = 'GMT') {
     let convertedTime = time[0]
 
     if (timezoneFound && isAmOrPm && validTime) {
-        //Uses indeces of timezone array
-        const offset1 = timezoneCodes.indexOf(userTimezone)
+        //Uses indices of timezone array
+        const offset1 = timezoneCodes.indexOf(startingTimezone)
         let offset2 = timezoneCodes.indexOf(targetTimezone)
         let diff = offset2 - offset1
 
@@ -46,29 +40,11 @@ function timeConversion(msg, targetTimezone = 'GMT') {
             }
             diff--
         }
-        msg.channel.send('Success!')
-        msg.channel.send(
-            userTimezone + ' time: ' + content[0] + ' ' + content[1]
-        )
-        msg.channel.send(
-            targetTimezone +
-                ' time: ' +
-                convertedTime +
-                ':' +
-                time[1] +
-                ' ' +
-                amOrPm
-        )
     }
 
     if (!timezoneFound) {
         msg.channel.send('Your first timezone is unavailable or nonexistent!')
     }
-    /*
-    if (!timezoneCodes.includes(conversion[1])) {
-        msg.channel.send('Your second timezone is unavailable or nonexistent!')
-    }
-    */
     if (!validTime) {
         msg.channel.send('Please use correct time format (eg. 4:20 or 04:20).')
     }
