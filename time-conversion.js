@@ -1,8 +1,11 @@
 const { timezoneCodes } = require('./supported-conversions')
 
+const timeRegEx = new RegExp('((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))')
+
 //defaulted targetTimezone for debug purposes
 function timeConversion(msg, startingTimezone = 'GMT', targetTimezone = 'GMT') {
-    const content = msg.content.split(' ')
+    const input = msg.content.match(timeRegEx)
+    const content = input[0].split(' ')
     const time = content[0].split(':')
     let amOrPm = content[1]
 
