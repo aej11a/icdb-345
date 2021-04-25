@@ -96,3 +96,7 @@ client.on('message', (msg) => {
         setup(msg)
     }
 })
+
+const lasIndex = msg.content.match(regex)[0][
+    msg.content.match(regex)[0].length - 1
+]

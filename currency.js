@@ -1,17 +1,17 @@
-var https = require('https')
+const https = require('https')
 
+//function call format convertCurrency(currency amount(int), '[from Currency Code]', '[to Currency Code]', CB)
+//cb format = function(error, value)
 function convertCurrency(amount, fromCurrency, toCurrency, cb) {
-    var apiKey = '63a107cf0f91eaa9a44f'
-
     fromCurrency = encodeURIComponent(fromCurrency)
     toCurrency = encodeURIComponent(toCurrency)
-    var query = fromCurrency + '_' + toCurrency
+    const query = fromCurrency + '_' + toCurrency
 
-    var url =
+    const url =
         'https://free.currconv.com/api/v7/convert?q=' +
         query +
         '&compact=ultra&apiKey=' +
-        apiKey
+        API_KEY //replace with actual API KEY
 
     https
         .get(url, function (res) {
@@ -23,16 +23,16 @@ function convertCurrency(amount, fromCurrency, toCurrency, cb) {
 
             res.on('end', function () {
                 try {
-                    var jsonObj = JSON.parse(body)
+                    const jsonObj = JSON.parse(body)
 
-                    var val = jsonObj[query] //stores the conversion rate based on query in val so for example
+                    const val = jsonObj[query] //stores the conversion rate based on query in val so for example
                     // if the query was USD_PHP then val = 48.402497
                     if (val) {
                         //if there is a value for val
-                        var total = val * amount //multiplies the val by the input amount
+                        const total = val * amount //multiplies the val by the input amount
                         cb(null, Math.round(total * 100) / 100)
                     } else {
-                        var err = new Error('Value not found for ' + query)
+                        const err = new Error('Value not found for ' + query)
                         console.log(err)
                         cb(err)
                     }
@@ -48,8 +48,11 @@ function convertCurrency(amount, fromCurrency, toCurrency, cb) {
         })
 }
 
-//test #1
-//function call format convertCurrency(currency amount(int), '[from Currency Code]', '[to Currency Code]', CB)
+module.exports = { converCurrency }
+
+/** 
+
+test #1
 
 convertCurrency(10, 'EUR', 'JPY', function (err, amount) {
     console.log(amount)
@@ -59,3 +62,5 @@ convertCurrency(10, 'EUR', 'JPY', function (err, amount) {
 convertCurrency(10, 'EUR', 'JPY', function (err, amount) {
     console.log(amount)
 })
+
+*/
