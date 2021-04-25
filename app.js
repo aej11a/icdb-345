@@ -7,6 +7,8 @@ const { commands } = require('./supported-conversions')
 const { setup } = require('./setup')
 const { sendTime, sendDate } = require('./send-time')
 const { timeConversion } = require('./time-conversion')
+const { autoParseCurrency } = require('./auto-parse-currency')
+const { convertCurrency } = require('./currency')
 const { addUserToDb, getUser, getChannel } = require('./db')
 
 const client = new Discord.Client()
@@ -35,7 +37,12 @@ client.on('message', async (msg) => {
         const messageSetupData = setup(msg)
         if (messageSetupData) addUserToDb(messageSetupData)
     } else {
-        //function: listens for timeRegEx
+        // for efficiency, don't fetch the user and channel twice,
+        // so keep them cached if there is a time AND currency match in the same message
+        let cachedUser
+        let cachedChannel
+
+        //function: listens for time mentions
         const timeRegEx = new RegExp(
             '((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))'
         )
@@ -51,27 +58,54 @@ client.on('message', async (msg) => {
                         targetTimezone
                     ).convertedTime)
             )
-            msg.channel.send(buildTimesResponse(resultTimes, user.timezone))
+            msg.channel.send(
+                buildConversionResponse(resultTimes, user.timezone)
+            )
+            cachedUser = user
+            cachedChannel = channel
+        }
+
+        // listen for currency mentions
+        const currencyTest = autoParseCurrency(msg)
+        if (currencyTest && currencyTest.currencyCode && currencyTest.value) {
+            //const user = cachedUser || await getUser(msg)
+            const channel = cachedChannel || (await getChannel(msg))
+            const resultCurrencies = {}
+            channel.currencies.forEach((targetCurrency, idx, currencyList) =>
+                convertCurrency(
+                    currencyTest.value,
+                    currencyTest.currencyCode,
+                    targetCurrency,
+                    (error, amount) => {
+                        if (error) {
+                            console.log(error)
+                        } else resultCurrencies[targetCurrency] = amount
+
+                        // the callback will call this function if it's on the last element
+                        if (idx === currencyList.length - 1) {
+                            msg.channel.send(
+                                buildConversionResponse(
+                                    resultCurrencies,
+                                    currencyTest.currencyCode
+                                )
+                            )
+                        }
+                    }
+                )
+            )
         }
     }
 })
 
-
-const lasIndex = msg.content.match(regex)[0][
-    msg.content.match(regex)[0].length - 1
-]
-
-const buildTimesResponse = (resultTimes, originalTimezone) => {
-    let timeResponse = `${resultTimes[originalTimezone]} in ${originalTimezone} corresponds to: `
+const buildConversionResponse = (conversionMap, keyOfOriginal) => {
+    let timeResponse = `${conversionMap[keyOfOriginal]} in ${keyOfOriginal} corresponds to: `
     timeResponse += '\n'
 
-    const entries = Object.entries(resultTimes)
-    const filteredResults = entries.filter(
-        ([timezone]) => timezone !== originalTimezone
-    )
+    const entries = Object.entries(conversionMap)
+    const filteredResults = entries.filter(([key]) => key !== keyOfOriginal)
 
     filteredResults.forEach(
-        ([timezone, time]) => (timeResponse += time + ' ' + timezone + '\n')
+        ([key, value]) => (timeResponse += value + ' ' + key + '\n')
     )
 
     return timeResponse
