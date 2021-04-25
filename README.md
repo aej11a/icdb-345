@@ -122,4 +122,4 @@ We're using Firebase to keep track of each user's currency code and timezone.
 For now we are hosting the bot on our local machines, not yet in the cloud.
 
 Architecture diagram is visible [here](https://excalidraw.com/#json=5732516476485632,PHBhVgbTFBjanz6dqAOWHw)
-![Architecture](https://github.com/aej11a/icdb-345/raw/main/docs/icdb_architecture.PNG)
+![Architecture](https://github.com/aej11a/icdb-345/raw/main/docs/icdb_architecture.png)
