@@ -11,7 +11,7 @@ function convertCurrency(amount, fromCurrency, toCurrency, cb) {
         'https://free.currconv.com/api/v7/convert?q=' +
         query +
         '&compact=ultra&apiKey=' +
-        API_KEY //replace with actual API KEY
+        process.env.API_KEY
 
     https
         .get(url, function (res) {
@@ -48,7 +48,7 @@ function convertCurrency(amount, fromCurrency, toCurrency, cb) {
         })
 }
 
-module.exports = { converCurrency }
+module.exports = { convertCurrency }
 
 /** 
 
