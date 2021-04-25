@@ -1,3 +1,10 @@
+const commands = {
+    greeting: 'Hello ICDB!',
+    date: '!date',
+    time: '!time',
+    convertTime: '!DocBrown',
+    setup: '!setup',
+}
 const timezoneCodes = [
     'IDLW',
     'NT',
@@ -189,6 +196,7 @@ const currencyCodes = [
 ]
 
 module.exports = {
+    commands,
     timezoneCodes,
     currencyCodes,
 }

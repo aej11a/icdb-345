@@ -1,7 +1,13 @@
 const Discord = require('discord.js')
 require('dotenv').config()
 
-const { timezoneCodes, currencyCodes } = require('./supported-conversions')
+//Add all command strings to supported-conversions and call these
+const { commands } = require('./supported-conversions')
+
+const { setup } = require('./setup')
+const { sendTime, sendDate } = require('./send-time')
+const { timeConversion } = require('./time-conversion')
+const { addUserToDb, getUser, getChannel } = require('./db')
 
 const client = new Discord.Client()
 client.on('ready', () => {
@@ -9,94 +15,64 @@ client.on('ready', () => {
 })
 client.login(process.env.BOT_TOKEN)
 
-function setup(msg) {
-    //https://greenwichmeantime.com/time-zone/definition/
-    //https://github.com/ac360/currency-codes-array-ISO4217
-    const content = msg.content.slice(7).toUpperCase().trim().split(' ') //7 is length of '!setup '
-    const timezone = content[0]
-    const currency = content[1]
-    const timezoneFound = timezoneCodes.includes(timezone)
-    const currencyFound = currencyCodes.includes(currency)
-    if (timezoneFound && currencyFound) {
-        msg.channel.send('Successful match for both timezone and currency!')
-        msg.channel.send('User: ' + msg.member.user.tag)
-        //msg.channel.send('Channel: ' + msg.channel.id);
-        // above line for debugging not for display*
+client.on('message', async (msg) => {
+    if (msg.author.bot) {
+        return
     }
-    if (timezoneFound) {
-        msg.channel.send('Timezone: ' + timezone)
-    } else {
-        msg.channel.send('We could not find your timezone.')
-    }
-    if (currencyFound) {
-        msg.channel.send('Currency: ' + currency)
-    } else {
-        msg.channel.send('We could not find your currency.')
-    }
-    return {
-        userId: msg.member.user.tag,
-        channelId: msg.channel.id,
-        timezone: timezone,
-        currency: currency,
-    }
-}
-
-client.on('message', (msg) => {
-    //test function: call and response
-    if (msg.content === 'Hello ICDB!') {
-        msg.reply('Hi :)')
-    }
-
     //test function: messages today's date formatted mm/dd/yyyy
-    if (msg.content === '!date') {
-        const date = new Date()
-        const content =
-            "Today's date is " +
-            date.getMonth() +
-            '/' +
-            date.getDate() +
-            '/' +
-            date.getFullYear() +
-            '.'
-        msg.channel.send(content)
-    }
-
+    if (msg.content === commands.date) sendDate(msg)
     //test function: messages the current time formatted hh:mm:ss
-    if (msg.content === '!time') {
-        const date = new Date()
-        let hours = date.getHours()
-        let minutes = date.getMinutes()
-        let seconds = date.getSeconds()
-        let amOrPm = 'am'
-        if (date.getHours() > 12) {
-            hours = date.getHours() - 12
-            amOrPm = 'pm'
-        }
-        if (date.getMinutes() < 10) {
-            minutes = '0' + date.getMinutes()
-        }
-        if (date.getSeconds() < 10) {
-            seconds = '0' + date.getSeconds()
-        }
-        const content =
-            'The time is ' +
-            hours +
-            ':' +
-            minutes +
-            ':' +
-            seconds +
-            ' ' +
-            amOrPm +
-            '.'
-        msg.channel.send(content)
+    else if (msg.content === commands.time) sendTime(msg)
+    else if (msg.content.startsWith('!whoami')) {
+        const user = await getUser(msg)
+        msg.channel.send(
+            `You are ${user.userId}, your timezone is ${user.timezone}, and your currency is ${user.currency}.`
+        )
     }
 
     //function: listens for !setup {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
-    if (msg.content.startsWith('!setup')) {
-        setup(msg)
+    else if (msg.content.startsWith('!setup')) {
+        const messageSetupData = setup(msg)
+        if (messageSetupData) addUserToDb(messageSetupData)
+    } else {
+        //function: listens for timeRegEx
+        const timeRegEx = new RegExp(
+            '((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))'
+        )
+        if (msg.content.match(timeRegEx)) {
+            const user = await getUser(msg)
+            const channel = await getChannel(msg)
+            const resultTimes = {}
+            channel.timezones.forEach(
+                (targetTimezone) =>
+                    (resultTimes[targetTimezone] = timeConversion(
+                        msg,
+                        user.timezone,
+                        targetTimezone
+                    ).convertedTime)
+            )
+            msg.channel.send(buildTimesResponse(resultTimes, user.timezone))
+        }
     }
 })
+
 
 const lasIndex = msg.content.match(regex)[0][
     msg.content.match(regex)[0].length - 1
 ]
+
+const buildTimesResponse = (resultTimes, originalTimezone) => {
+    let timeResponse = `${resultTimes[originalTimezone]} in ${originalTimezone} corresponds to: `
+    timeResponse += '\n'
+
+    const entries = Object.entries(resultTimes)
+    const filteredResults = entries.filter(
+        ([timezone]) => timezone !== originalTimezone
+    )
+
+    filteredResults.forEach(
+        ([timezone, time]) => (timeResponse += time + ' ' + timezone + '\n')
+    )
+
+    return timeResponse
+}
