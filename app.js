@@ -39,8 +39,8 @@ client.on('message', async (msg) => {
     } else {
         // for efficiency, don't fetch the user and channel twice,
         // so keep them cached if there is a time AND currency match in the same message
-        let cachedUser
-        let cachedChannel
+        //let cachedUser
+        //let cachedChannel
 
         //function: listens for time mentions
         const timeRegEx = new RegExp(
@@ -69,28 +69,21 @@ client.on('message', async (msg) => {
         const currencyTest = autoParseCurrency(msg)
         if (currencyTest && currencyTest.currencyCode && currencyTest.value) {
             //const user = cachedUser || await getUser(msg)
-            const channel = cachedChannel || (await getChannel(msg))
+            const channel = await getChannel(msg)
             const resultCurrencies = {}
-            channel.currencies.forEach((targetCurrency, idx, currencyList) =>
+            const promises = channel.currencies.map((targetCurrency) =>
                 convertCurrency(
                     currencyTest.value,
                     currencyTest.currencyCode,
                     targetCurrency,
-                    (error, amount) => {
-                        if (error) {
-                            console.log(error)
-                        } else resultCurrencies[targetCurrency] = amount
-
-                        // the callback will call this function if it's on the last element
-                        if (idx === currencyList.length - 1) {
-                            msg.channel.send(
-                                buildConversionResponse(
-                                    resultCurrencies,
-                                    currencyTest.currencyCode
-                                )
-                            )
-                        }
-                    }
+                    resultCurrencies
+                )
+            )
+            await Promise.all(promises)
+            msg.channel.send(
+                buildConversionResponse(
+                    resultCurrencies,
+                    currencyTest.currencyCode
                 )
             )
         }
