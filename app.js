@@ -56,6 +56,11 @@ client.on('message', async (msg) => {
     }
 })
 
+
+const lasIndex = msg.content.match(regex)[0][
+    msg.content.match(regex)[0].length - 1
+]
+
 const buildTimesResponse = (resultTimes, originalTimezone) => {
     let timeResponse = `${resultTimes[originalTimezone]} in ${originalTimezone} corresponds to: `
     timeResponse += '\n'
