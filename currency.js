@@ -1,8 +1,13 @@
-const https = require('https')
+const fetch = require('node-fetch')
 
 //function call format convertCurrency(currency amount(int), '[from Currency Code]', '[to Currency Code]', CB)
 //cb format = function(error, value)
-function convertCurrency(amount, fromCurrency, toCurrency, cb) {
+async function convertCurrency(
+    amount,
+    fromCurrency,
+    toCurrency,
+    resultCurrencies
+) {
     fromCurrency = encodeURIComponent(fromCurrency)
     toCurrency = encodeURIComponent(toCurrency)
     const query = fromCurrency + '_' + toCurrency
@@ -13,38 +18,13 @@ function convertCurrency(amount, fromCurrency, toCurrency, cb) {
         '&compact=ultra&apiKey=' +
         process.env.API_KEY
 
-    https
-        .get(url, function (res) {
-            var body = ''
-
-            res.on('data', function (chunk) {
-                body += chunk
-            })
-
-            res.on('end', function () {
-                try {
-                    const jsonObj = JSON.parse(body)
-
-                    const val = jsonObj[query] //stores the conversion rate based on query in val so for example
-                    // if the query was USD_PHP then val = 48.402497
-                    if (val) {
-                        //if there is a value for val
-                        const total = val * amount //multiplies the val by the input amount
-                        cb(null, Math.round(total * 100) / 100)
-                    } else {
-                        const err = new Error('Value not found for ' + query)
-                        console.log(err)
-                        cb(err)
-                    }
-                } catch (e) {
-                    console.log('Parse error: ', e)
-                    cb(e)
-                }
-            })
-        })
-        .on('error', function (e) {
-            console.log('Got an error: ', e)
-            cb(e)
+    return fetch(url)
+        .then((res) => res.text())
+        .then((body) => {
+            const jsonObj = JSON.parse(body)
+            const conversionRate = jsonObj[query]
+            resultCurrencies[toCurrency] =
+                Math.round(conversionRate * amount * 100) / 100
         })
 }
 
