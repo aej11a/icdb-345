@@ -14,6 +14,11 @@ const { addUserToDb, getUser, getChannel } = require('./db')
 const client = new Discord.Client()
 client.on('ready', () => {
     console.log("The bot is connected to Yang's Gang!")
+    client.channels.cache
+        .find((channel) => channel.name === 'bot-testing')
+        .send(
+            "ICDB is connected! Type '!help' for a list of supported commands!"
+        )
 })
 client.login(process.env.BOT_TOKEN)
 
@@ -30,8 +35,11 @@ client.on('message', async (msg) => {
         msg.channel.send(
             `You are ${user.userId}, your timezone is ${user.timezone}, and your currency is ${user.currency}.`
         )
+    } else if (msg.content.startsWith('!help')) {
+        msg.channel.send(
+            '!setup [timezone] [currency] : Sets your preferred timezone and currency.\n!whoami : Returns your Discord ID with your preferred timezone and currency, if applicable.'
+        )
     }
-
     //function: listens for !setup {timezone abbreviation} {currency abbreviation}, compares with list of acceptable values, messages confirmation, returns {userId, channelId, timezone, currency}
     else if (msg.content.startsWith('!setup')) {
         const messageSetupData = setup(msg)
