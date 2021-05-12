@@ -35,3 +35,5 @@ The biggest limitation for this project was simply the time that we had to do it
 - Include decimals in currency conversion 
 
 Once again, due to time constraints we will not be able to implement these features but overall, we are proud of our bot and learned so much during the short process. 
+
+Screenshare: https://drive.google.com/file/d/13JaIFCR2Im27LasC9RUWCRuDyku6aKQL/view?usp=sharing
